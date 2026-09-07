@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinSight AI — Stock Intelligence & Probability Analysis</title>
+  <meta name="description" content="Advanced Generative AI-powered Stock Intelligence, Probability and Risk Analysis System. Get technical analysis, news intelligence, and AI-synthesized market outlook for any stock." />
+  <meta name="keywords" content="stock analysis, technical analysis, AI stock intelligence, market probability, risk analysis" />
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%233b82f6'/><text y='22' x='6' font-size='18' font-family='sans-serif' fill='white'>⚡</text></svg>" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ══ NAVBAR ═══════════════════════════════════════════════════════ -->
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="nav-brand">
+      <div class="nav-logo" aria-hidden="true">⚡</div>
+      <div>
+        <div class="nav-title">FinSight AI</div>
+        <div class="nav-tagline">Stock Intelligence Platform</div>
+      </div>
+    </div>
+    <div class="nav-badges">
+      <div class="nav-badge live" id="status-badge">Live Market Data</div>
+      <div class="nav-badge">v2.0</div>
+      <div class="nav-badge">AI-Powered</div>
+    </div>
+  </nav>
+
+  <!-- ══ HERO / SEARCH ════════════════════════════════════════════════ -->
+  <header class="hero" role="banner">
+    <div class="hero-eyebrow">
+      <span>🧠</span> Hybrid AI + Quantitative Analysis
+    </div>
+    <h1 class="hero-title">
+      Stock Intelligence,<br/>
+      <span class="grad">Powered by AI & Data</span>
+    </h1>
+    <p class="hero-subtitle">
+      Enter any stock ticker or company name. FinSight AI collects market data,
+      calculates technical indicators, analyzes news sentiment, and uses
+      Google Gemini to synthesize a complete probability-based intelligence report.
+    </p>
+
+    <!-- Search Bar -->
+    <div class="search-wrapper" role="search">
+      <form class="search-bar" id="search-form" autocomplete="off" onsubmit="return false;">
+        <span class="search-icon" aria-hidden="true">🔍</span>
+        <input
+          type="text"
+          class="search-input"
+          id="search-input"
+          placeholder="Enter ticker (AAPL) or company name (Apple, NVIDIA, Reliance)..."
+          aria-label="Search for stock ticker or company"
+          autofocus
+          maxlength="80"
+        />
+        <button type="submit" class="search-btn" id="analyze-btn" aria-label="Analyze stock">
+          <span id="btn-icon">⚡</span>
+          <span id="btn-text">Analyze</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- Quick Picks -->
+    <div class="quick-picks" role="list" aria-label="Quick stock picks">
+      <span class="quick-label">Quick picks:</span>
+      <button class="quick-chip" role="listitem" onclick="quickSearch('AAPL')">AAPL</button>
+      <button class="quick-chip" role="listitem" onclick="quickSearch('TSLA')">TSLA</button>
+      <button class="quick-chip" role="listitem" onclick="quickSearch('NVDA')">NVDA</button>
+      <button class="quick-chip" role="listitem" onclick="quickSearch('MSFT')">MSFT</button>
+      <button class="quick-chip" role="listitem" onclick="quickSearch('GOOGL')">GOOGL</button>
+      <button class="quick-chip" role="listitem" onclick="quickSearch('AMZN')">AMZN</button>
+      <button class="quick-chip" role="listitem" onclick="quickSearch('TCS.NS')">TCS</button>
+      <button class="quick-chip" role="listitem" onclick="quickSearch('RELIANCE.NS')">RELIANCE</button>
+    </div>
+  </header>
+
+  <!-- ══ CONTENT AREA ═════════════════════════════════════════════════ -->
+  <main id="main-content" role="main">
+
+    <!-- Empty State -->
+    <div id="empty-state" class="state-panel" aria-live="polite">
+      <span class="state-icon" aria-hidden="true">📊</span>
+      <h3>Ready to Analyze</h3>
+      <p>Enter a stock ticker or company name above to get a complete probability-based market intelligence report powered by real market data and Google Gemini AI.</p>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading-state" class="loading-grid hidden" aria-live="assertive" aria-busy="true" role="status">
+      <div style="text-align:center; padding: 20px 0 32px;">
+        <div style="font-size:14px; color:var(--accent-blue); font-weight:700; margin-bottom:8px;">
+          ⚡ Running FinSight AI Analysis Pipeline...
+        </div>
+        <div style="font-size:12px; color:var(--text-muted);" id="loading-step">
+          Fetching market data and calculating indicators...
+        </div>
+      </div>
+      <div class="loading-row">
+        <div class="skel-card card" style="--h:120px;"><div class="skeleton skel-tall" style="--h:120px;"></div></div>
+        <div class="skel-card card" style="--h:120px;"><div class="skeleton skel-tall" style="--h:120px;"></div></div>
+        <div class="skel-card card" style="--h:120px;"><div class="skeleton skel-tall" style="--h:120px;"></div></div>
+      </div>
+      <div class="card">
+        <div class="skeleton skel-h mb-12" style="--h:16px; width:40%;"></div>
+        <div class="skeleton skel-chart"></div>
+      </div>
+      <div class="loading-row">
+        <div class="card"><div class="skeleton skel-tall" style="--h:200px;"></div></div>
+        <div class="card"><div class="skeleton skel-tall" style="--h:200px;"></div></div>
+      </div>
+    </div>
+
+    <!-- Error State -->
+    <div id="error-state" class="hidden" aria-live="assertive" role="alert">
+      <div class="error-panel">
+        <span class="error-icon" aria-hidden="true">⚠️</span>
+        <div>
+          <div class="error-title">Analysis Failed</div>
+          <div class="error-msg" id="error-message">An unexpected error occurred. Please try again.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ DASHBOARD ════════════════════════════════════════════════ -->
+    <div id="dashboard" class="hidden">
+
+      <!-- 1. Stock Header -->
+      <section id="section-header" aria-label="Stock information" class="mb-20">
+        <div class="stock-header">
+          <div class="stock-meta">
+            <div id="stock-ticker-badge" class="stock-ticker-badge">—</div>
+            <h2 id="stock-name" class="stock-name">—</h2>
+            <div class="stock-details">
+              <span class="stock-detail-item" id="stock-sector">📂 —</span>
+              <span class="stock-detail-item" id="stock-exchange">🏛 —</span>
+              <span class="stock-detail-item" id="stock-cap">💰 —</span>
+              <span class="stock-detail-item" id="stock-pe">📊 P/E: —</span>
+            </div>
+          </div>
+          <div class="stock-price-block">
+            <div id="stock-price" class="stock-price">—</div>
+            <div class="price-changes">
+              <div id="change-1d" class="price-change flat">1D —</div>
+              <div id="change-5d" class="price-change flat">5D —</div>
+              <div id="change-20d" class="price-change flat">20D —</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. Market Outlook + Probability -->
+      <section id="section-outlook" aria-label="Market outlook and probability" class="mb-20">
+
+        <!-- Market Outlook Banner -->
+        <div class="outlook-card card mb-20" id="outlook-banner">
+          <div class="outlook-header">
+            <div>
+              <div class="outlook-label">Overall Market Outlook</div>
+              <div style="font-size:12px; color:var(--text-muted); margin-top:4px;" id="outlook-score-line">Combined Signal Score: —</div>
+            </div>
+            <div id="outlook-badge" class="outlook-badge neutral">Neutral</div>
+          </div>
+          <div style="padding:16px 24px 20px;">
+            <div style="font-size:13px; color:var(--text-secondary); line-height:1.6;" id="outlook-note">
+              Analysis in progress...
+            </div>
+          </div>
+        </div>
+
+        <!-- Probability Section -->
+        <div class="probability-section">
+
+          <!-- Probability Gauge -->
+          <div class="card gauge-card" id="gauge-card">
+            <div class="section-label">Upside Probability</div>
+            <div class="gauge-container" aria-label="Probability gauge">
+              <svg class="gauge-svg" width="160" height="160" viewBox="0 0 160 160" role="img" aria-hidden="true">
+                <circle class="gauge-track" cx="80" cy="80" r="64" stroke-width="12"/>
+                <circle id="gauge-circle" class="gauge-fill" cx="80" cy="80" r="64" stroke-width="12"
+                  stroke="#10b981"
+                  stroke-dasharray="402.12"
+                  stroke-dashoffset="402.12"/>
+              </svg>
+              <div class="gauge-center-text">
+                <div id="gauge-pct" class="gauge-pct text-green">—</div>
+                <div class="gauge-sub">Upside</div>
+              </div>
+            </div>
+            <div class="gauge-label" id="gauge-label">Probability Estimate</div>
+            <div class="gauge-note" id="gauge-note">Based on technical + news signal fusion</div>
+          </div>
+
+          <!-- Probability Bars -->
+          <div class="card prob-bars-card">
+            <div class="section-label mb-16">Directional Probability Breakdown</div>
+            <div class="prob-bar-item">
+              <div class="prob-bar-header">
+                <span class="prob-bar-label">📈 Upside Probability</span>
+                <span class="prob-bar-value up-val" id="upside-pct-val">—%</span>
+              </div>
+              <div class="prob-bar-track">
+                <div class="prob-bar-fill up" id="upside-bar" style="width:0%"></div>
+              </div>
+            </div>
+            <div class="prob-bar-item">
+              <div class="prob-bar-header">
+                <span class="prob-bar-label">📉 Downside Probability</span>
+                <span class="prob-bar-value down-val" id="downside-pct-val">—%</span>
+              </div>
+              <div class="prob-bar-track">
+                <div class="prob-bar-fill down" id="downside-bar" style="width:0%"></div>
+              </div>
+            </div>
+            <div style="margin-top:12px; padding:12px 14px; background:rgba(245,158,11,0.07); border:1px solid rgba(245,158,11,0.2); border-radius:10px;">
+              <div style="font-size:11px; color:var(--accent-gold); font-weight:700; margin-bottom:4px;">⚠ Methodology Note</div>
+              <div style="font-size:11px; color:var(--text-muted); line-height:1.5;">
+                Probabilities are <strong>analytical estimates</strong> based on historical pattern scoring, NOT guaranteed predictions. Score -1→+1 maps to 20%→80% probability with volatility adjustment.
+              </div>
+            </div>
+          </div>
+
+          <!-- Risk & Reward -->
+          <div class="card rr-card">
+            <div class="section-label mb-12">Risk & Reward Metrics</div>
+            <div class="rr-metric">
+              <div class="rr-metric-label">Risk Level</div>
+              <div id="risk-level-val" class="rr-metric-value">—</div>
+              <div id="risk-factors-list" class="rr-metric-sub">—</div>
+            </div>
+            <div class="rr-metric">
+              <div class="rr-metric-label">Risk-Reward Ratio</div>
+              <div id="rr-ratio-val" class="rr-metric-value text-blue">—</div>
+              <div class="rr-metric-sub">Estimated upside vs downside</div>
+            </div>
+            <div class="rr-metric">
+              <div class="rr-metric-label">Analysis Confidence</div>
+              <div id="confidence-val" class="rr-metric-value">—</div>
+              <div class="confidence-bar-wrap">
+                <div class="confidence-bar-track">
+                  <div class="confidence-bar-fill" id="confidence-bar" style="width:0%"></div>
+                </div>
+                <div id="confidence-note" class="rr-metric-sub">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. Price Scenarios -->
+      <section id="section-scenarios" aria-label="Price scenarios" class="mb-20">
+        <div class="flex-between mb-16">
+          <h3 class="section-title"><span class="icon" style="background:rgba(59,130,246,0.15);">🎯</span> Potential Price Scenarios</h3>
+          <div style="font-size:11px; color:var(--text-muted); padding:5px 12px; border:1px solid var(--border); border-radius:10px;">
+            1–3 Month Horizon | Based on Historical Volatility
+          </div>
+        </div>
+        <div class="scenarios-grid">
+          <div class="scenario-card bull">
+            <div class="scenario-header">
+              <div class="scenario-title">📈 Bullish Scenario</div>
+              <div class="scenario-horizon" id="bull-horizon">1–3 months</div>
+            </div>
+            <div class="scenario-range text-green" id="bull-range">—</div>
+            <div class="scenario-prices" id="bull-prices">Target: — to —</div>
+            <div class="scenario-basis" id="bull-basis">—</div>
+          </div>
+          <div class="scenario-card bear">
+            <div class="scenario-header">
+              <div class="scenario-title">📉 Bearish Scenario</div>
+              <div class="scenario-horizon" id="bear-horizon">1–3 months</div>
+            </div>
+            <div class="scenario-range text-red" id="bear-range">—</div>
+            <div class="scenario-prices" id="bear-prices">Target: — to —</div>
+            <div class="scenario-basis" id="bear-basis">—</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. KPI Metrics Bar -->
+      <section id="section-kpis" aria-label="Key performance indicators" class="mb-20">
+        <div class="kpi-bar">
+          <div class="kpi-card">
+            <div class="kpi-label">52-Week High</div>
+            <div class="kpi-value mono text-green" id="kpi-52h">—</div>
+            <div class="kpi-sub">Annual peak price</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">52-Week Low</div>
+            <div class="kpi-value mono text-red" id="kpi-52l">—</div>
+            <div class="kpi-sub">Annual trough price</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Volatility (Annual)</div>
+            <div class="kpi-value mono" id="kpi-vol">—</div>
+            <div class="kpi-sub">Historical price deviation</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">ATR (14d)</div>
+            <div class="kpi-value mono" id="kpi-atr">—</div>
+            <div class="kpi-sub" id="kpi-atr-pct">Average true range</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Volume Ratio</div>
+            <div class="kpi-value mono" id="kpi-volr">—</div>
+            <div class="kpi-sub">vs 20-day average</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Data Quality</div>
+            <div class="kpi-value mono" id="kpi-dq">—</div>
+            <div class="kpi-sub" id="kpi-dq-sub">Analysis reliability</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. Price Chart -->
+      <section id="section-chart" aria-label="Price chart" class="chart-section mb-20">
+        <div class="card" style="padding: 24px 24px 16px;">
+          <div class="chart-header">
+            <div>
+              <h3 class="section-title"><span class="icon" style="background:rgba(59,130,246,0.15);">📈</span> Price Chart (90 Days)</h3>
+            </div>
+            <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+              <div class="chart-legend">
+                <div class="legend-item">
+                  <div class="legend-line" style="background:#f1f5f9;"></div> Price
+                </div>
+                <div class="legend-item">
+                  <div class="legend-line" style="background:#3b82f6;"></div> SMA 20
+                </div>
+                <div class="legend-item">
+                  <div class="legend-line" style="background:#f59e0b;"></div> SMA 50
+                </div>
+                <div class="legend-item">
+                  <div class="legend-dot" style="background:rgba(16,185,129,0.3);"></div> BB
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="chart-canvas-wrap">
+            <canvas id="price-chart" aria-label="Stock price chart"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. Technical Signals Grid -->
+      <section id="section-signals" aria-label="Technical signals" class="mb-20">
+        <div class="flex-between mb-20">
+          <h3 class="section-title"><span class="icon" style="background:rgba(139,92,246,0.15);">⚙️</span> Technical Analysis Signals</h3>
+          <div id="signal-summary" style="font-size:12px; color:var(--text-muted);"></div>
+        </div>
+        <div class="signals-grid" id="signals-grid"></div>
+      </section>
+
+      <!-- 7. RSI & MACD Sub-Charts -->
+      <section id="section-subcharts" aria-label="RSI and MACD charts" class="sub-charts-grid mb-20">
+        <div class="card" style="padding:20px;">
+          <div class="flex-between mb-12">
+            <h4 class="section-title" style="font-size:14px;"><span class="icon" style="background:rgba(139,92,246,0.15); width:26px;height:26px;font-size:12px;">📊</span> RSI (14-Period)</h4>
+            <div style="font-size:11px; color:var(--text-muted);">Overbought >70 | Oversold <30</div>
+          </div>
+          <div class="sub-chart-wrap">
+            <canvas id="rsi-chart" aria-label="RSI indicator chart"></canvas>
+          </div>
+        </div>
+        <div class="card" style="padding:20px;">
+          <div class="flex-between mb-12">
+            <h4 class="section-title" style="font-size:14px;"><span class="icon" style="background:rgba(6,182,212,0.15); width:26px;height:26px;font-size:12px;">📉</span> MACD (12,26,9)</h4>
+            <div style="font-size:11px; color:var(--text-muted);">MACD vs Signal Line</div>
+          </div>
+          <div class="sub-chart-wrap">
+            <canvas id="macd-chart" aria-label="MACD indicator chart"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- 8. AI Synthesis Section -->
+      <section id="section-synthesis" aria-label="AI intelligence report" class="synthesis-section mb-20">
+        <div class="synthesis-header">
+          <h3 class="section-title"><span class="icon" style="background:linear-gradient(135deg,rgba(139,92,246,0.2),rgba(59,130,246,0.2));">🧠</span> AI Intelligence Report</h3>
+          <div class="ai-badge">
+            <span>✨</span> Gemini AI Synthesis
+          </div>
+        </div>
+
+        <!-- Executive Summary -->
+        <div class="exec-summary-card mb-16">
+          <div class="section-label mb-12">Executive Summary</div>
+          <p id="exec-summary">—</p>
+        </div>
+
+        <!-- 2x2 Analysis Grid -->
+        <div class="synthesis-grid mb-16">
+          <div class="synthesis-card">
+            <div class="synthesis-card-title">
+              <div class="dot" style="background:#3b82f6;"></div>
+              Technical Narrative
+            </div>
+            <p class="synthesis-text" id="tech-narrative">—</p>
+          </div>
+          <div class="synthesis-card">
+            <div class="synthesis-card-title">
+              <div class="dot" style="background:#06b6d4;"></div>
+              News Intelligence
+            </div>
+            <p class="synthesis-text" id="news-narrative">—</p>
+          </div>
+          <div class="synthesis-card">
+            <div class="synthesis-card-title">
+              <div class="dot" style="background:#10b981;"></div>
+              Opportunity Analysis
+            </div>
+            <p class="synthesis-text" id="opportunity-analysis">—</p>
+          </div>
+          <div class="synthesis-card">
+            <div class="synthesis-card-title">
+              <div class="dot" style="background:#ef4444;"></div>
+              Risk Analysis
+            </div>
+            <p class="synthesis-text" id="risk-analysis">—</p>
+          </div>
+        </div>
+
+        <!-- Key Signals from AI -->
+        <div class="card mb-16" style="padding:20px;">
+          <div class="section-label mb-12">Key Signals Identified</div>
+          <div id="key-signals-wrap" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+        </div>
+
+        <!-- Investor Note -->
+        <div style="padding:14px 18px; background:rgba(245,158,11,0.07); border:1px solid rgba(245,158,11,0.2); border-radius:10px;">
+          <div style="font-size:11px; color:var(--accent-gold); font-weight:700; margin-bottom:6px;">💼 Investor Note</div>
+          <p style="font-size:12px; color:var(--text-muted); line-height:1.6;" id="investor-note">—</p>
+        </div>
+      </section>
+
+      <!-- 9. Catalysts & Risk Factors -->
+      <section id="section-catalysts" aria-label="Positive catalysts and risk factors" class="mb-20">
+        <div class="flex-between mb-20">
+          <h3 class="section-title"><span class="icon" style="background:rgba(16,185,129,0.15);">🎯</span> Catalysts & Risk Factors</h3>
+        </div>
+        <div class="catalysts-grid">
+          <div>
+            <div class="section-label mb-12">✅ Positive Catalysts</div>
+            <div class="catalyst-list" id="catalyst-list"></div>
+          </div>
+          <div>
+            <div class="section-label mb-12">⚠️ Risk Factors</div>
+            <div class="risk-list" id="risk-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 10. News Intelligence Section -->
+      <section id="section-news" aria-label="News intelligence" class="mb-20">
+        <div class="flex-between mb-20">
+          <h3 class="section-title"><span class="icon" style="background:rgba(6,182,212,0.15);">📰</span> News Intelligence</h3>
+          <div id="news-overall-badge" style="font-size:12px; padding:5px 14px; border-radius:20px; font-weight:700;"></div>
+        </div>
+
+        <!-- Themes -->
+        <div id="themes-section" class="hidden">
+          <div class="section-label mb-8">Dominant Themes</div>
+          <div class="themes-wrap" id="themes-wrap"></div>
+        </div>
+
+        <!-- Sentiment Bar -->
+        <div id="news-sentiment-section">
+          <div class="section-label mb-8">Sentiment Distribution</div>
+          <div class="news-sentiment-bar">
+            <div class="sentiment-track">
+              <div class="sentiment-fill pos" id="news-pos-bar" style="width:0%"></div>
+              <div class="sentiment-fill neut" id="news-neut-bar" style="width:0%"></div>
+              <div class="sentiment-fill neg" id="news-neg-bar" style="width:0%"></div>
+            </div>
+            <div class="sentiment-counts">
+              <span class="sentiment-count pos">📈 <span id="news-pos-cnt">0</span></span>
+              <span class="sentiment-count neut">— <span id="news-neut-cnt">0</span></span>
+              <span class="sentiment-count neg">📉 <span id="news-neg-cnt">0</span></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Articles -->
+        <div id="news-articles-wrap">
+          <div class="news-grid" id="news-grid"></div>
+        </div>
+
+        <!-- No news state -->
+        <div id="no-news-state" class="hidden">
+          <div class="news-unavailable">
+            <div style="font-size:32px; margin-bottom:12px;">📰</div>
+            <strong style="color:var(--text-secondary);">News data unavailable</strong><br/>
+            <span>NEWS_API_KEY not configured or no recent articles found for this stock.</span><br/>
+            <span style="color:var(--accent-blue);">Analysis based on technical indicators only.</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 11. Explainable AI Section -->
+      <section id="section-xai" aria-label="Explainable AI methodology">
+        <div class="xai-section">
+          <div class="xai-header">
+            <div style="width:36px;height:36px;background:linear-gradient(135deg,rgba(139,92,246,0.3),rgba(59,130,246,0.2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;">🔍</div>
+            <div>
+              <div class="xai-title">Explainable AI — How Was This Assessment Generated?</div>
+              <div style="font-size:12px; color:var(--text-muted);">Full transparency on the scoring methodology and signal weights</div>
+            </div>
+          </div>
+          <div class="xai-content">
+            <div>
+              <div class="section-label mb-12">AI Explanation</div>
+              <p class="xai-text" id="xai-explainability">—</p>
+              <div style="margin-top:16px; padding:14px; background:rgba(255,255,255,0.03); border-radius:10px; border:1px solid var(--border);">
+                <div class="section-label mb-8">Methodology</div>
+                <div style="font-size:12px; color:var(--text-muted); line-height:1.8;">
+                  <strong style="color:var(--text-secondary);">1.</strong> Technical indicators scored [-1, +1]<br/>
+                  <strong style="color:var(--text-secondary);">2.</strong> Weighted average → Technical Score (70%)<br/>
+                  <strong style="color:var(--text-secondary);">3.</strong> News sentiment → News Score (30%)<br/>
+                  <strong style="color:var(--text-secondary);">4.</strong> Combined Score adjusted for volatility drag<br/>
+                  <strong style="color:var(--text-secondary);">5.</strong> Linear mapping: Score→Probability [20%–80%]<br/>
+                  <strong style="color:var(--text-secondary);">6.</strong> Gemini AI synthesizes the narrative
+                </div>
+              </div>
+            </div>
+            <div>
+              <div class="section-label mb-12">Signal Score Breakdown</div>
+              <div style="overflow-x:auto;">
+                <table class="score-breakdown-table" id="breakdown-table" aria-label="Signal score breakdown">
+                  <thead>
+                    <tr>
+                      <th>Indicator</th>
+                      <th>Signal</th>
+                      <th>Score</th>
+                      <th>Weight</th>
+                      <th>Contribution</th>
+                    </tr>
+                  </thead>
+                  <tbody id="breakdown-body"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="disclaimer" role="note">
+          <strong>⚠️ IMPORTANT DISCLAIMER:</strong> FinSight AI provides analytical probability estimates based on historical market patterns and available information.
+          <strong>These are NOT guaranteed predictions or financial advice.</strong>
+          All probability estimates represent analytical outputs of a quantitative model, not certainties.
+          Past performance does not guarantee future results. Markets can be irrational.
+          <strong>Always consult a qualified financial advisor before making any investment decisions.</strong>
+          This tool is built for educational and research purposes.
+        </div>
+      </section>
+
+    </div><!-- /#dashboard -->
+
+  </main><!-- /#main-content -->
+
+  <!-- ══ FOOTER ════════════════════════════════════════════════════════ -->
+  <footer role="contentinfo">
+    <span>FinSight AI</span> — Advanced Stock Intelligence Platform |
+    Built with Python, Flask, yfinance & Google Gemini |
+    <span>For Educational & Research Purposes Only</span>
+  </footer>
+
+</div><!-- /.container -->
+
+<!-- Main App Script -->
+<script src="app.js"></script>
+
+</body>
+</html>
