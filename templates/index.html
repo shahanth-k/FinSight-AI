@@ -920,7 +920,7 @@
   <script>
     const CIRCUMFERENCE = 2 * Math.PI * 50; // ~314.16
 
-    function handleQ uickSelect(ticker) {
+    function handleQuickSelect(ticker) {
       document.getElementById('ticker-search-input').value = ticker;
       executeStockAnalysis();
     }
@@ -980,13 +980,13 @@
       document.getElementById('val-name').textContent = stock.name || stock.ticker;
       document.getElementById('val-sector').textContent = stock.sector || 'Communication Services';
       document.getElementById('val-exchange').textContent = stock.exchange || 'NMS';
-      document.getElementById('val-mktcap').tetContent = stock.market_cap_fmt ? '$' + stock.market_cap_fmt : '$4.16T';
+      document.getElementById('val-mktcap').textContent = stock.market_cap_fmt ? '$' + stock.market_cap_fmt : '$4.16T';
       document.getElementById('val-pe').textContent = stock.pe_ratio != null ? stock.pe_ratio : '17.0';
 
       // Price
       const sym = stock.currency_symbol || '$';
       const formattedPrice = stock.price != null 
-        ? sym + Number(stock.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigit)
+        ? sym + Number(stock.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
         : sym + '0.00';
       document.getElementById('val-price').textContent = formattedPrice;
 
@@ -1005,9 +1005,9 @@
         const val = p.val != null ? p.val : 0.0;
         const isPos = val >= 0;
         const sign = isPos ? '+' : '';
-        const pill = documen.createElement('span');
+        const pill = document.createElement('span');
         pill.className = `period-return-pill ${isPos ? 'pos' : 'neg'}`;
-        pill.textContent = `${p.label} ${{val.toFixed(2)}%`;
+        pill.textContent = `${p.label} ${val.toFixed(2)}%`;
         pillsContainer.appendChild(pill);
       });
 
@@ -1048,7 +1048,7 @@
       document.getElementById('val-risk-sub').textContent = intel.risk_sub;
 
       document.getElementById('val-rr-ratio').textContent = intel.risk_reward_ratio;
-      document.getElementById('val-conf-label').textContent = intel.confenc;
+      document.getElementById('val-conf-label').textContent = intel.confidence_label;
       document.getElementById('val-conf-bar').style.width = intel.confidence_pct + '%';
       document.getElementById('val-conf-sub').textContent = intel.confidence_sub;
     }
