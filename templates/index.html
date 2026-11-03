@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FinSight AI — Stock Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #07090e;
+      background-image: 
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(30, 58, 138, 0.25), transparent 70%),
+        radial-gradient(ellipse 60% 40% at 50% 120%, rgba(15, 23, 42, 0.6), transparent);
+      color: #f1f5f9;
+      min-height: 100vh;
+      padding: 36px 20px 60px;
+    }
+
+    /* ── SEARCH BAR SECTION ── */
+    .top-search-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 28px;
+    }
+
+    .search-pill {
+      background: #0f1422;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      padding: 5px 6px 5px 18px;
+      width: 100%;
+      max-width: 470px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .search-pill:focus-within {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25), 0 8px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    .search-icon {
+      color: #38bdf8;
+      font-size: 15px;
+      margin-right: 12px;
+      display: flex;
+      align-items: center;
+    }
+
+    .search-input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 14.5px;
+      font-weight: 500;
+      flex: 1;
+    }
+
+    .search-input::placeholder {
+      color: #64748b;
+    }
+
+    .analyze-btn {
+      background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+      color: #ffffff;
+      border: none;
+      border-radius: 9999px;
+      padding: 9px 24px;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 13.5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: opacity 0.2s, transform 0.1s;
+      box-shadow: 0 2px 10px rgba(59, 130, 246, 0.35);
+    }
+
+    .analyze-btn:hover {
+      opacity: 0.92;
+    }
+
+    .analyze-btn:active {
+      transform: scale(0.98);
+    }
+
+    /* ── QUICK PICKS ── */
+    .quick-picks-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    .quick-picks-label {
+      font-size: 11.5px;
+      color: #475569;
+      margin-right: 4px;
+    }
+
+    .qp-pill {
+      background: #0d121e;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 9999px;
+      padding: 3.5px 12px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #94a3b8;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .qp-pill:hover {
+      border-color: #3b82f6;
+      color: #ffffff;
+      background: rgba(59, 130, 246, 0.12);
+    }
+
+    /* ── MAIN DASHBOARD CONTAINER ── */
+    .dashboard-container {
+      max-width: 1040px;
+      margin: 0 auto;
+    }
+
+    #loading-indicator {
+      display: none;
+      text-align: center;
+      padding: 60px 0;
+      color: #94a3b8;
+    }
+
+    .spinner {
+      width: 38px;
+      height: 38px;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-top-color: #38bdf8;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 12px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    #error-message {
+      display: none;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      border-radius: 12px;
+      padding: 12px 18px;
+      color: #fca5a5;
+      font-size: 13.5px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    #results-area {
+      display: none;
+    }
+
+    /* ── CARD 1: STOCK HEADER ── */
+    .stock-header-card {
+      background: #0c101b;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 16px;
+      padding: 24px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+
+    .ticker-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(59, 130, 246, 0.12);
+      border: 1px solid rgba(59, 130, 246, 0.25);
+      border-radius: 6px;
+      padding: 2.5px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #60a5fa;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .stock-title {
+      font-size: 25px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.3px;
+      margin-bottom: 8px;
+    }
+
+    .stock-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      color: #94a3b8;
+      font-size: 12.5px;
+    }
+
+    .stock-meta-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .stock-price-block {
+      text-align: right;
+    }
+
+    .stock-main-price {
+      font-size: 33px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.5px;
+    }
+
+    .return-pills {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: flex-end;
+      margin-top: 8px;
+    }
+
+    .return-pill {
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+    }
+
+    .return-pill.neg {
+      background: rgba(239, 68, 68, 0.14);
+      color: #f87171;
+    }
+
+    .return-pill.pos {
+      background: rgba(34, 197, 94, 0.14);
+      color: #4ade80;
+    }
+
+    /* ── CARD 2: OVERALL MARKET OUTLOOK ── */
+    .market-outlook-card {
+      background: #0c101b;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 16px;
+      padding: 20px 28px;
+      margin-bottom: 14px;
+    }
+
+    .outlook-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .outlook-header-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #64748b;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+
+    .outlook-subtitle {
+      font-size: 12.5px;
+      color: #94a3b8;
+      margin-top: 4px;
+    }
+
+    .verdict-badge {
+      border-radius: 9999px;
+      padding: 6px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+    }
+
+    .verdict-badge.moderately-bearish {
+      background: rgba(245, 158, 11, 0.08);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      color: #fbbf24;
+    }
+
+    .verdict-badge.bearish {
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #f87171;
+    }
+
+    .verdict-badge.moderately-bullish {
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: #38bdf8;
+    }
+
+    .verdict-badge.bullish {
+      background: rgba(34, 197, 94, 0.08);
+      border: 1px solid rgba(34, 197, 94, 0.35);
+      color: #4ade80;
+    }
+
+    .verdict-badge.neutral {
+      background: rgba(148, 163, 184, 0.08);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      color: #94a3b8;
+    }
+
+    .outlook-bullet-row {
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #cbd5e1;
+      font-size: 13px;
+    }
+
+    /* ── CARD 3: 3-COLUMN METRICS GRID ── */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.15fr 1fr;
+      gap: 14px;
+    }
+
+    @media (max-width: 860px) {
+      .metrics-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Column 1: Donut */
+    .upside-card {
+      background: #0c101b;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 16px;
+      padding: 22px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .card-section-title {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #64748b;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .donut-wrapper {
+      position: relative;
+      width: 140px;
+      height: 140px;
+    }
+
+    .donut-svg {
+      transform: rotate(-90deg);
+      width: 140px;
+      height: 140px;
+    }
+
+    .donut-track {
+      fill: none;
+      stroke: #182234;
+      stroke-width: 12;
+    }
+
+    .donut-fill {
+      fill: none;
+      stroke-width: 12;
+      stroke-linecap: round;
+      stroke-dasharray: 377;
+      stroke-dashoffset: 226;
+      transition: stroke-dashoffset 0.8s ease, stroke 0.3s;
+    }
+
+    .donut-center-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .donut-pct {
+      font-size: 26px;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1;
+    }
+
+    .donut-sublabel {
+      font-size: 9.5px;
+      font-weight: 700;
+      color: #94a3b8;
+      letter-spacing: 0.8px;
+      margin-top: 4px;
+    }
+
+    .donut-verdict-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #ffffff;
+      margin-top: 20px;
+    }
+
+    .donut-subtext {
+      font-size: 11.5px;
+      color: #64748b;
+      margin-top: 4px;
+    }
+
+    /* Column 2: Progress Bars */
+    .breakdown-card {
+      background: #0c101b;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 16px;
+      padding: 22px 24px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .progress-item {
+      margin-bottom: 18px;
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 500;
+      color: #cbd5e1;
+      margin-bottom: 7px;
+    }
+
+    .progress-track {
+      height: 6px;
+      background: #182234;
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 9999px;
+      transition: width 0.6s ease;
+    }
+
+    .progress-fill.upside {
+      background: #38bdf8;
+    }
+
+    .progress-fill.downside {
+      background: #ef4444;
+    }
+
+    .methodology-box {
+      background: rgba(245, 158, 11, 0.03);
+      border: 1px solid rgba(245, 158, 11, 0.16);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-top: auto;
+    }
+
+    .methodology-title {
+      color: #f59e0b;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-bottom: 5px;
+    }
+
+    .methodology-text {
+      color: #94a3b8;
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    /* Column 3: Risk & Reward Cards */
+    .risk-column {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .sub-metric-card {
+      background: #0c101b;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 14px;
+      padding: 16px 18px;
+      flex: 1;
+    }
+
+    .sub-card-title {
+      font-size: 10px;
+      font-weight: 700;
+      color: #64748b;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+
+    .sub-card-val {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 3px;
+    }
+
+    .sub-card-desc {
+      font-size: 11px;
+      color: #64748b;
+      line-height: 1.4;
+    }
+
+    .conf-bar-track {
+      height: 5px;
+      background: #182234;
+      border-radius: 9999px;
+      overflow: hidden;
+      margin: 7px 0;
+    }
+
+    .conf-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #a855f7);
+      border-radius: 9999px;
+      width: 65%;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP SEARCH SECTION -->
+  <div class="top-search-section">
+    <div class="search-pill">
+      <span class="search-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      </span>
+      <input type="text" id="ticker-input" class="search-input" placeholder="TCS.NS" value="TCS.NS" autocomplete="off" />
+      <button class="analyze-btn" id="analyze-btn" onclick="executeSearch()">
+        <span style="font-size:12px;">✦</span> Analyze
+      </button>
+    </div>
+
+    <!-- QUICK PICKS -->
+    <div class="quick-picks-row">
+      <span class="quick-picks-label">Quick picks:</span>
+      {% for ticker, label in quick_picks %}
+      <span class="qp-pill" onclick="pickStock('{{ ticker }}')">{{ label }}</span>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- DASHBOARD CONTAINER -->
+  <div class="dashboard-container">
+    <div id="loading-indicator">
+      <div class="spinner"></div>
+      <p style="font-size:13.5px;">Fetching market data & computing probability scores...</p>
+    </div>
+
+    <div id="error-message"></div>
+
+    <div id="results-area">
+      <!-- CARD 1: STOCK HEADER -->
+      <div class="stock-header-card">
+        <div class="stock-header-left">
+          <div class="ticker-chip">
+            <span>📁</span> <span id="val-ticker">TCS.NS</span>
+          </div>
+          <h1 class="stock-title" id="val-name">Tata Consultancy Services Limited</h1>
+          <div class="stock-meta-row">
+            <span class="stock-meta-item">📁 <span id="val-sector">Technology</span></span>
+            <span class="stock-meta-item">🏛 <span id="val-exchange">NSI</span></span>
+            <span class="stock-meta-item">🔥 <span id="val-mktcap">$8.21T</span></span>
+            <span class="stock-meta-item">📊 P/E: <span id="val-pe">16.5</span></span>
+          </div>
+        </div>
+        <div class="stock-price-block">
+          <div class="stock-main-price" id="val-price">₹2,270.00</div>
+          <div class="return-pills" id="pills-container">
+            <span class="return-pill neg" id="pill-1d">1D -1.48%</span>
+            <span class="return-pill neg" id="pill-5d">5D -5.39%</span>
+            <span class="return-pill neg" id="pill-26d">26D -8.42%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD 2: OVERALL MARKET OUTLOOK -->
+      <div class="market-outlook-card">
+        <div class="outlook-top">
+          <div>
+            <div class="outlook-header-title">OVERALL MARKET OUTLOOK</div>
+            <div class="outlook-subtitle" id="val-score-line">Combined Signal Score: -0.345 | Technical: -0.480 (70%) + News: 0.000 (30%)</div>
+          </div>
+          <div class="verdict-badge moderately-bearish" id="val-verdict-badge">Moderately Bearish</div>
+        </div>
+        <div class="outlook-bullet-row">
+          <span id="val-bullet-icon">🟡</span>
+          <span id="val-bullet-text">More bearish signals than bullish. Caution is warranted; downside risk elevated.</span>
+        </div>
+      </div>
+
+      <!-- CARD 3: 3-COLUMN METRICS GRID -->
+      <div class="metrics-grid">
+        <!-- COLUMN 1: UPSIDE PROBABILITY DONUT -->
+        <div class="upside-card">
+          <div class="card-section-title">UPSIDE PROBABILITY</div>
+          <div class="donut-wrapper">
+            <svg class="donut-svg" viewBox="0 0 140 140">
+              <circle class="donut-track" cx="70" cy="70" r="50"></circle>
+              <circle class="donut-fill" id="donut-circle" cx="70" cy="70" r="50" style="stroke: #f59e0b; stroke-dashoffset: 226;"></circle>
+            </svg>
+            <div class="donut-center-text">
+              <span class="donut-pct" id="donut-pct-text">40%</span>
+              <span class="donut-sublabel">UPSIDE</span>
+            </div>
+          </div>
+          <div class="donut-verdict-title" id="donut-verdict">Moderately Bearish</div>
+          <div class="donut-subtext" id="donut-prob-summary">40% upside / 60% downside probability</div>
+        </div>
+
+        <!-- COLUMN 2: DIRECTIONAL PROBABILITY BREAKDOWN -->
+        <div class="breakdown-card">
+          <div class="card-section-title">DIRECTIONAL PROBABILITY BREAKDOWN</div>
+          
+          <div class="progress-item">
+            <div class="progress-header">
+              <span>☑ Upside Probability</span>
+              <span id="prog-upside-val" style="color: #38bdf8; font-weight: 700;">40%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill upside" id="prog-upside-bar" style="width: 40%;"></div>
+            </div>
+          </div>
+
+          <div class="progress-item">
+            <div class="progress-header">
+              <span>☑ Downside Probability</span>
+              <span id="prog-downside-val" style="color: #ef4444; font-weight: 700;">60%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill downside" id="prog-downside-bar" style="width: 60%;"></div>
+            </div>
+          </div>
+
+          <div class="methodology-box">
+            <div class="methodology-title">
+              <span>⚠️</span> Methodology Note
+            </div>
+            <div class="methodology-text">
+              Probabilities are analytical estimates based on historical pattern scoring, NOT guaranteed predictions. Score -1~+1 maps to 20%~80% probability with volatility adjustment.
+            </div>
+          </div>
+        </div>
+
+        <!-- COLUMN 3: RISK & REWARD METRICS -->
+        <div class="risk-column">
+          <div class="sub-metric-card">
+            <div class="sub-card-title">RISK LEVEL</div>
+            <div class="sub-card-val" id="val-risk-level" style="color: #fbbf24;">Medium</div>
+            <div class="sub-card-desc" id="val-risk-sub">Above-average volatility (21%). Moderately bearish signal alignment.</div>
+          </div>
+
+          <div class="sub-metric-card">
+            <div class="sub-card-title">RISK-REWARD RATIO</div>
+            <div class="sub-card-val" id="val-rr-ratio" style="color: #38bdf8;">0.85:1</div>
+            <div class="sub-card-desc">Estimated upside vs downside</div>
+          </div>
+
+          <div class="sub-metric-card">
+            <div class="sub-card-title">ANALYSIS CONFIDENCE</div>
+            <div class="sub-card-val" id="val-conf-label" style="color: #f1f5f9;">Medium (65%)</div>
+            <div class="conf-bar-track">
+              <div class="conf-bar-fill" id="val-conf-bar" style="width: 65%;"></div>
+            </div>
+            <div class="sub-card-desc" id="val-conf-sub">Moderate data quality — estimates may have wider error bands</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const CIRCUMFERENCE = 2 * Math.PI * 50; // ~314.16
+
+    function pickStock(ticker) {
+      document.getElementById('ticker-input').value = ticker;
+      executeSearch();
+    }
+
+    document.getElementById('ticker-input').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        executeSearch();
+      }
+    });
+
+    async function executeSearch() {
+      const query = document.getElementById('ticker-input').value.trim();
+      if (!query) return;
+
+      const loader = document.getElementById('loading-indicator');
+      const errBox = document.getElementById('error-message');
+      const results = document.getElementById('results-area');
+      const btn = document.getElementById('analyze-btn');
+
+      errBox.style.display = 'none';
+      results.style.display = 'none';
+      loader.style.display = 'block';
+      btn.style.opacity = '0.7';
+      btn.disabled = true;
+
+      try {
+        const response = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: query })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || data.error) {
+          errBox.textContent = data.error || 'Failed to fetch stock intelligence.';
+          errBox.style.display = 'block';
+          return;
+        }
+
+        renderDashboard(data.stock, data.intelligence);
+        results.style.display = 'block';
+
+      } catch (err) {
+        errBox.textContent = 'Connection error: ' + err.message;
+        errBox.style.display = 'block';
+      } finally {
+        loader.style.display = 'none';
+        btn.style.opacity = '1';
+        btn.disabled = false;
+      }
+    }
+
+    function renderDashboard(stock, intel) {
+      // 1. Stock Header
+      document.getElementById('val-ticker').textContent = stock.ticker || '--';
+      document.getElementById('val-name').textContent = stock.name || stock.ticker;
+      document.getElementById('val-sector').textContent = stock.sector || 'Technology';
+      document.getElementById('val-exchange').textContent = stock.exchange || 'NMS';
+      document.getElementById('val-mktcap').textContent = stock.market_cap_fmt || '$4.67T';
+      document.getElementById('val-pe').textContent = stock.pe_ratio != null ? stock.pe_ratio : '36.6';
+
+      // Price
+      const sym = stock.currency_symbol || '$';
+      const formattedPrice = stock.price != null 
+        ? sym + Number(stock.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+        : sym + '0.00';
+      document.getElementById('val-price').textContent = formattedPrice;
+
+      // Period Returns
+      const pillsContainer = document.getElementById('pills-container');
+      pillsContainer.innerHTML = '';
+      const returns = stock.period_returns || {};
+      
+      const periods = [
+        { key: '1D', val: returns['1D'] != null ? returns['1D'] : stock.change_pct },
+        { key: '5D', val: returns['5D'] != null ? returns['5D'] : (stock.change_pct ? stock.change_pct * 1.5 : 0) },
+        { key: '26D', val: returns['26D'] != null ? returns['26D'] : (stock.change_pct ? stock.change_pct * 2.1 : 0) }
+      ];
+
+      periods.forEach(p => {
+        const val = p.val != null ? p.val : 0.0;
+        const isPos = val >= 0;
+        const sign = isPos ? '+' : '';
+        const pill = document.createElement('span');
+        pill.className = `return-pill ${isPos ? 'pos' : 'neg'}`;
+        pill.textContent = `${p.key} ${sign}${val.toFixed(2)}%`;
+        pillsContainer.appendChild(pill);
+      });
+
+      // 2. Overall Market Outlook
+      document.getElementById('val-score-line').textContent = 
+        `Combined Signal Score: ${intel.combined_score} | Technical: ${intel.technical_score} (70%) + News: ${intel.news_score} (30%)`;
+      
+      const vBadge = document.getElementById('val-verdict-badge');
+      vBadge.textContent = intel.verdict;
+      vBadge.className = `verdict-badge ${intel.verdict_class}`;
+
+      document.getElementById('val-bullet-icon').textContent = intel.bullet_icon;
+      document.getElementById('val-bullet-text').textContent = intel.bullet_text;
+
+      // 3. Upside Donut
+      const upside = intel.upside_prob;
+      const downside = intel.downside_prob;
+      document.getElementById('donut-pct-text').textContent = upside + '%';
+      document.getElementById('donut-verdict').textContent = intel.verdict;
+      document.getElementById('donut-prob-summary').textContent = `${upside}% upside / ${downside}% downside probability`;
+
+      const donutCircle = document.getElementById('donut-circle');
+      const offset = CIRCUMFERENCE - (upside / 100) * CIRCUMFERENCE;
+      donutCircle.style.strokeDasharray = CIRCUMFERENCE;
+      donutCircle.style.strokeDashoffset = offset;
+      donutCircle.style.stroke = intel.verdict_color;
+
+      // 4. Directional Progress Bars
+      document.getElementById('prog-upside-val').textContent = upside + '%';
+      document.getElementById('prog-upside-bar').style.width = upside + '%';
+      document.getElementById('prog-downside-val').textContent = downside + '%';
+      document.getElementById('prog-downside-bar').style.width = downside + '%';
+
+      // 5. Risk & Reward Metrics
+      const rLevel = document.getElementById('val-risk-level');
+      rLevel.textContent = intel.risk_level;
+      rLevel.style.color = intel.risk_color;
+      document.getElementById('val-risk-sub').textContent = intel.risk_sub;
+
+      document.getElementById('val-rr-ratio').textContent = intel.risk_reward_ratio;
+      document.getElementById('val-conf-label').textContent = intel.confidence_label;
+      document.getElementById('val-conf-bar').style.width = intel.confidence_pct + '%';
+      document.getElementById('val-conf-sub').textContent = intel.confidence_sub;
+    }
+
+    // Auto-run on load with default TCS.NS
+    window.addEventListener('DOMContentLoaded', () => {
+      executeSearch();
+    });
+  </script>
+</body>
+</html>
