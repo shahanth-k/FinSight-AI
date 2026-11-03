@@ -1,19 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FinSight AI — Stock Intelligence Platform</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       background-color: #06090e;
-      background-image: 
+      background-image:
         radial-gradient(circle at 50% 0%, rgba(30, 58, 138, 0.22) 0%, transparent 65%),
         radial-gradient(circle at 80% 30%, rgba(88, 28, 135, 0.12) 0%, transparent 50%),
         radial-gradient(circle at 20% 70%, rgba(15, 23, 42, 0.6) 0%, transparent 70%);
@@ -299,7 +307,9 @@
     }
 
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     #error-message-box {
@@ -496,6 +506,7 @@
       .metrics-three-cols {
         grid-template-columns: 1fr;
       }
+
       .hero-heading {
         font-size: 34px;
       }
@@ -708,6 +719,7 @@
     }
   </style>
 </head>
+
 <body>
 
   <!-- SITE NAVBAR -->
@@ -715,7 +727,7 @@
     <div class="brand-group">
       <div class="brand-icon-box">
         <svg viewBox="0 0 24 24">
-          <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z"/>
+          <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z" />
         </svg>
       </div>
       <div class="brand-text-col">
@@ -738,26 +750,23 @@
       <span class="gradient-text">Powered by AI &amp; Data</span>
     </h1>
     <p class="hero-description">
-      Enter any stock ticker or company name. FinSight AI collects market data, calculates technical indicators, analyzes news sentiment, and uses Google Gemini to synthesize a complete probability-based intelligence report.
+      Enter any stock ticker or company name. FinSight AI collects market data, calculates technical indicators,
+      analyzes news sentiment, and uses Google Gemini to synthesize a complete probability-based intelligence report.
     </p>
 
     <!-- SEARCH BAR PILL -->
     <div class="search-pill-container">
       <div class="search-pill">
         <span class="search-icon-box">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
         </span>
-        <input 
-          type="text" 
-          id="ticker-search-input" 
-          class="search-input-field" 
-          placeholder="Enter ticker (AAPL) or company name (Apple, NVIDIA, Reliance...)" 
-          value="GOOGL" 
-          autocomplete="off" 
-        />
+        <input type="text" id="ticker-search-input" class="search-input-field"
+          placeholder="Enter ticker (AAPL) or company name (Apple, NVIDIA, Reliance...)" value="GOOGL"
+          autocomplete="off" />
         <button class="analyze-submit-btn" id="analyze-submit-btn" onclick="executeStockAnalysis()">
           <span style="font-size:12px;">✦</span> Analyze
         </button>
@@ -812,13 +821,15 @@
         <div class="outlook-header-flex">
           <div>
             <div class="outlook-tag">OVERALL MARKET OUTLOOK</div>
-            <div class="score-breakdown-line" id="val-score-line">Combined Signal Score: -0.194 | Technical: -0.196 (70%) + News: 0.000 (30%)</div>
+            <div class="score-breakdown-line" id="val-score-line">Combined Signal Score: -0.194 | Technical: -0.196
+              (70%) + News: 0.000 (30%)</div>
           </div>
           <div class="verdict-pill-badge moderately-bearish" id="val-verdict-badge">Moderately Bearish</div>
         </div>
         <div class="outlook-summary-bullet">
           <span id="val-bullet-icon">🟡</span>
-          <span id="val-bullet-text">More bearish signals than bullish. Caution is warranted; downside risk elevated.</span>
+          <span id="val-bullet-text">More bearish signals than bullish. Caution is warranted; downside risk
+            elevated.</span>
         </div>
       </div>
 
@@ -830,7 +841,8 @@
           <div class="donut-gauge-box">
             <svg class="donut-svg-elem" viewBox="0 0 140 140">
               <circle class="donut-bg-circle" cx="70" cy="70" r="50"></circle>
-              <circle class="donut-bar-circle" id="donut-circle-bar" cx="70" cy="70" r="50" style="stroke: #f59e0b; stroke-dashoffset: 188.5;"></circle>
+              <circle class="donut-bar-circle" id="donut-circle-bar" cx="70" cy="70" r="50"
+                style="stroke: #f59e0b; stroke-dashoffset: 188.5;"></circle>
             </svg>
             <div class="donut-text-overlay">
               <span class="donut-score-text" id="donut-pct-text">40%</span>
@@ -844,7 +856,7 @@
         <!-- COLUMN 2: DIRECTIONAL PROBABILITY BREAKDOWN -->
         <div class="directional-breakdown-card">
           <div class="grid-box-title">DIRECTIONAL PROBABILITY BREAKDOWN</div>
-          
+
           <div class="prob-bar-wrapper">
             <div class="bar-label-row">
               <span>☑ Upside Probability</span>
@@ -870,7 +882,8 @@
               <span>⚠️</span> Methodology Note
             </div>
             <div class="methodology-body">
-              Probabilities are analytical estimates based on historical pattern scoring, NOT guaranteed predictions. Score -1~+1 maps to 20%~80% probability with volatility adjustment.
+              Probabilities are analytical estimates based on historical pattern scoring, NOT guaranteed predictions.
+              Score -1~+1 maps to 20%~80% probability with volatility adjustment.
             </div>
           </div>
         </div>
@@ -880,7 +893,8 @@
           <div class="sub-metric-tile">
             <div class="sub-tile-heading">RISK LEVEL</div>
             <div class="sub-tile-value" id="val-risk-level" style="color: #fbbf24;">Medium</div>
-            <div class="sub-tile-subtext" id="val-risk-sub">Above-average volatility (21%). Moderately bearish signal alignment.</div>
+            <div class="sub-tile-subtext" id="val-risk-sub">Above-average volatility (21%). Moderately bearish signal
+              alignment.</div>
           </div>
 
           <div class="sub-metric-tile">
@@ -895,7 +909,8 @@
             <div class="conf-track">
               <div class="conf-fill" id="val-conf-bar" style="width: 65%;"></div>
             </div>
-            <div class="sub-tile-subtext" id="val-conf-sub">Moderate data quality — estimates may have wider error bands</div>
+            <div class="sub-tile-subtext" id="val-conf-sub">Moderate data quality — estimates may have wider error bands
+            </div>
           </div>
         </div>
       </div>
@@ -905,7 +920,7 @@
   <script>
     const CIRCUMFERENCE = 2 * Math.PI * 50; // ~314.16
 
-    function handleQuickSelect(ticker) {
+    function handleQ uickSelect(ticker) {
       document.getElementById('ticker-search-input').value = ticker;
       executeStockAnalysis();
     }
@@ -965,13 +980,13 @@
       document.getElementById('val-name').textContent = stock.name || stock.ticker;
       document.getElementById('val-sector').textContent = stock.sector || 'Communication Services';
       document.getElementById('val-exchange').textContent = stock.exchange || 'NMS';
-      document.getElementById('val-mktcap').textContent = stock.market_cap_fmt ? '$' + stock.market_cap_fmt : '$4.16T';
+      document.getElementById('val-mktcap').tetContent = stock.market_cap_fmt ? '$' + stock.market_cap_fmt : '$4.16T';
       document.getElementById('val-pe').textContent = stock.pe_ratio != null ? stock.pe_ratio : '17.0';
 
       // Price
       const sym = stock.currency_symbol || '$';
       const formattedPrice = stock.price != null 
-        ? sym + Number(stock.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+        ? sym + Number(stock.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigit)
         : sym + '0.00';
       document.getElementById('val-price').textContent = formattedPrice;
 
@@ -990,9 +1005,9 @@
         const val = p.val != null ? p.val : 0.0;
         const isPos = val >= 0;
         const sign = isPos ? '+' : '';
-        const pill = document.createElement('span');
+        const pill = documen.createElement('span');
         pill.className = `period-return-pill ${isPos ? 'pos' : 'neg'}`;
-        pill.textContent = `${p.label} ${sign}${val.toFixed(2)}%`;
+        pill.textContent = `${p.label} ${{val.toFixed(2)}%`;
         pillsContainer.appendChild(pill);
       });
 
@@ -1033,7 +1048,7 @@
       document.getElementById('val-risk-sub').textContent = intel.risk_sub;
 
       document.getElementById('val-rr-ratio').textContent = intel.risk_reward_ratio;
-      document.getElementById('val-conf-label').textContent = intel.confidence_label;
+      document.getElementById('val-conf-label').textContent = intel.confenc;
       document.getElementById('val-conf-bar').style.width = intel.confidence_pct + '%';
       document.getElementById('val-conf-sub').textContent = intel.confidence_sub;
     }
@@ -1044,4 +1059,5 @@
     });
   </script>
 </body>
+
 </html>

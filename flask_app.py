@@ -13,8 +13,8 @@ load_dotenv()
 
 app = Flask(__name__)
 
-QUICK_PICKS = ["AAPL", "TSLA", "NVDA", "MSFT", "GOOGL", "AMZN", "TCS.NS", "RELIANCE.NS"]
-QUICK_LABELS = ["AAPL", "TSLA", "NVDA", "MSFT", "GOOGL", "AMZN", "TCS", "RELIANCE"]
+QUICK_PICKS = ["AAPL", "TSLA", "NVDA", "MSFT", "GOOGL", "JIOFIN.NS", "TCS.NS", "RELIANCE.NS"]
+QUICK_LABELS = ["AAPL", "TSLA", "NVDA", "MSFT", "GOOGL", "JIO", "TCS", "RELIANCE"]
 
 
 @app.route("/")
